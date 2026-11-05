@@ -10,7 +10,7 @@
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
-
+from encodings import search_function
 
 # valueIterationAgents.py
 # -----------------------
@@ -63,13 +63,11 @@ class ValueIterationAgent(ValueEstimationAgent):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
 
-
     def getValue(self, state):
         """
           Return the value of the state (computed in __init__).
         """
         return self.values[state]
-
 
     def computeQValueFromValues(self, state, action):
         """
@@ -77,7 +75,12 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        qValue = 0
+        stateProb = self.mdp.getTransitionStatesAndProbs(state, action)
+        for nextState, probability  in stateProb:
+            reward = self.mdp.getReward(state, action, nextState)
+            qValue += probability * (reward + self.discount * self.values[nextState])
+        return qValue
 
     def computeActionFromValues(self, state):
         """
@@ -89,6 +92,19 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
+        if self.mdp.isTerminal(state):
+            return None
+
+        bestValue = -1000000000
+        bestAction = None
+
+        for action in self.mdp.getPossibleActions(state):
+            print(self.computeQValueFromValues(state, action))
+            if bestValue < self.computeQValueFromValues(state, action):
+                bestValue = self.computeQValueFromValues(state, action)
+                bestAction = action
+
+        return action
         util.raiseNotDefined()
 
     def getPolicy(self, state):
