@@ -16,7 +16,8 @@ from game import *
 from learningAgents import ReinforcementAgent
 from featureExtractors import *
 
-import random,util,math
+import random, util, math
+
 
 class QLearningAgent(ReinforcementAgent):
     """
@@ -38,6 +39,7 @@ class QLearningAgent(ReinforcementAgent):
         - self.getLegalActions(state)
           which returns legal actions for a state
     """
+
     def __init__(self, **args):
         "You can initialize Q-values here..."
         ReinforcementAgent.__init__(self, **args)
@@ -52,10 +54,9 @@ class QLearningAgent(ReinforcementAgent):
           or the Q node value otherwise
         """
         "*** YOUR CODE HERE ***"
-        print(self.value[(state, action)])
+        # print(self.value[(state, action)])
         return self.value[(state, action)]
         util.raiseNotDefined()
-
 
     def computeValueFromQValues(self, state):
         """
@@ -72,7 +73,6 @@ class QLearningAgent(ReinforcementAgent):
             for action in self.getLegalActions(state):
                 actionsValues.append(self.getQValue(state, action))
             return max(actionsValues)
-
 
         util.raiseNotDefined()
 
@@ -129,8 +129,8 @@ class QLearningAgent(ReinforcementAgent):
         """
         "*** YOUR CODE HERE ***"
         self.value[(state, action)] = (1 - self.alpha) * self.getQValue(state, action) + self.alpha * (
-                    reward + self.discount * self.getValue(nextState))
-        #util.raiseNotDefined()
+                reward + self.discount * self.getValue(nextState))
+        # util.raiseNotDefined()
 
     def getPolicy(self, state):
         return self.computeActionFromQValues(state)
@@ -142,7 +142,7 @@ class QLearningAgent(ReinforcementAgent):
 class PacmanQAgent(QLearningAgent):
     "Exactly the same as QLearningAgent, but with different default parameters"
 
-    def __init__(self, epsilon=0.05,gamma=0.8,alpha=0.2, numTraining=0, **args):
+    def __init__(self, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0, **args):
         """
         These default parameters can be changed from the pacman.py command line.
         For example, to change the exploration rate, try:
@@ -166,8 +166,8 @@ class PacmanQAgent(QLearningAgent):
         informs parent of action for Pacman.  Do not change or remove this
         method.
         """
-        action = QLearningAgent.getAction(self,state)
-        self.doAction(state,action)
+        action = QLearningAgent.getAction(self, state)
+        self.doAction(state, action)
         return action
 
 
@@ -179,6 +179,7 @@ class ApproximateQAgent(PacmanQAgent):
        and update.  All other QLearningAgent functions
        should work as is.
     """
+
     def __init__(self, extractor='IdentityExtractor', **args):
         self.featExtractor = util.lookup(extractor, globals())()
         PacmanQAgent.__init__(self, **args)
@@ -193,14 +194,21 @@ class ApproximateQAgent(PacmanQAgent):
           where * is the dotProduct operator
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        qValue = 0
+        for feature, value in self.featExtractor.getFeatures(state, action).items():
+            qValue += value * self.weights[feature]
+
+        return qValue
 
     def update(self, state, action, nextState, reward):
         """
            Should update your weights based on transition
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        diff = reward + self.discount * self.getValue(nextState) - self.getQValue(state, action)
+
+        for feature, value in self.featExtractor.getFeatures(state, action).items():
+            self.weights[feature] += self.alpha * diff * value
 
     def final(self, state):
         "Called at the end of each game."
@@ -211,4 +219,6 @@ class ApproximateQAgent(PacmanQAgent):
         if self.episodesSoFar == self.numTraining:
             # you might want to print your weights here for debugging
             "*** YOUR CODE HERE ***"
+            for weight in self.weights.keys():
+                print(self.weights[weight])
             pass
